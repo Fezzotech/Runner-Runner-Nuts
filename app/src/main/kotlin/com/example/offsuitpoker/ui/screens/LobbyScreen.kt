@@ -318,7 +318,7 @@ fun LobbyScreen(
 
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Host IP: $localIpAddress (port 8080)",
+                text = "Host URL: http://$localIpAddress:8080",
                 color = Color(0xFF525260),
                 fontFamily = FontFamily.Monospace,
                 fontSize = 10.sp

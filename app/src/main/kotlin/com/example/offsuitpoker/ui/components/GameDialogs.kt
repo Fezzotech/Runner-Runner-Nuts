@@ -313,13 +313,22 @@ fun HostQrDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Host Address", color = Color(0xFF71717A), fontFamily = FontFamily.Monospace, fontSize = 9.sp)
+                        Text(text = "Web & App Host Address", color = Color(0xFF71717A), fontFamily = FontFamily.Monospace, fontSize = 9.sp)
                         Text(
-                            text = "$hostIp:8080",
+                            text = "http://$hostIp:8080",
                             color = Color(0xFFFFFFFF),
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 14.sp,
+                            fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "iPhone: Scan with Camera to play in Safari!\nAndroid: Scan with in-app scanner",
+                            color = Color(0xFFD4AF37),
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 9.5.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 13.sp
                         )
                     }
                 }

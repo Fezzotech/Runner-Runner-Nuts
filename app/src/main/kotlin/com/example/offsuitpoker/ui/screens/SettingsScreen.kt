@@ -300,7 +300,7 @@ fun SettingsScreen(
                 DiagRow("Package", context.packageName)
                 DiagRow("Device", "${Build.MANUFACTURER.uppercase()} ${Build.MODEL}")
                 DiagRow("Android OS", "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
-                DiagRow("Local IP", "$localIpAddress:8080")
+                DiagRow("Local IP", "http://$localIpAddress:8080")
                 DiagRow("Player", "${profile.playerName} (${profile.playerId.take(8)}...)")
                 DiagRow("Stars", "${profile.starsRemaining}/5 active (${CurrencyFormatter.formatChips(profile.currentChips)})")
                 DiagRow("Practice Chips", CurrencyFormatter.formatChips(profile.practiceChips))

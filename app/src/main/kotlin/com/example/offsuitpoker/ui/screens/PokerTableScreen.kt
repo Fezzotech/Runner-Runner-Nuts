@@ -133,7 +133,7 @@ fun PokerTableScreen(
 
     LaunchedEffect(showQrDialog) {
         if (showQrDialog && qrBitmap == null) {
-            qrBitmap = NetworkUtils.generateQrCodeBitmap("$hostIp:8080")
+            qrBitmap = NetworkUtils.generateQrCodeBitmap("http://$hostIp:8080")
         }
     }
 

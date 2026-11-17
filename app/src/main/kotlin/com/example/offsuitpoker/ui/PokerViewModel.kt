@@ -9,6 +9,7 @@ import com.example.offsuitpoker.model.ActionType
 import com.example.offsuitpoker.model.TableState
 import com.example.offsuitpoker.network.NetworkUtils
 import com.example.offsuitpoker.network.PokerClient
+import com.example.offsuitpoker.network.PokerHttpServer
 import com.example.offsuitpoker.network.PokerServer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,6 +66,7 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
     val localIpAddress: String = NetworkUtils.getLocalIpAddress()
 
     private var server: PokerServer? = null
+    private var httpServer: PokerHttpServer? = null
     private var client: PokerClient? = null
 
     fun updateCurrency(symbol: String, useIndianFormat: Boolean) {
@@ -108,8 +110,11 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
 
             val currentProfile = _profile.value
             try {
+                httpServer?.stop()
                 server?.stop()
-                server = PokerServer(8080, viewModelScope, currentProfile.playerId)
+                httpServer = PokerHttpServer(8080, viewModelScope)
+                httpServer?.start()
+                server = PokerServer(8088, viewModelScope, currentProfile.playerId)
                 server?.start()
                 _isHost.value = true
 
@@ -161,8 +166,9 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             try {
+                httpServer?.stop()
                 server?.stop()
-                server = PokerServer(8080, viewModelScope, p.playerId)
+                server = PokerServer(8088, viewModelScope, p.playerId)
                 server?.start()
                 _isHost.value = true
 
@@ -192,7 +198,12 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
     private fun connectClient(hostIp: String, profile: PlayerProfile, chipsToJoin: Int, onConnected: () -> Unit) {
         try {
             client?.close()
-            val uri = URI("ws://$hostIp:8080")
+            val cleanHost = hostIp.trim()
+                .removePrefix("http://")
+                .removePrefix("ws://")
+                .substringBefore(":")
+                .substringBefore("/")
+            val uri = URI("ws://${cleanHost.ifEmpty { "127.0.0.1" }}:8088")
             client = PokerClient(
                 serverUri = uri,
                 onConnectedCallback = {
@@ -269,10 +280,12 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
         client = null
         if (_isHost.value) {
             try {
+                httpServer?.stop()
                 server?.stop()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            httpServer = null
             server = null
         }
         _currentScreen.value = Screen.LOBBY
@@ -282,9 +295,12 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
         super.onCleared()
         client?.close()
         try {
+            httpServer?.stop()
             server?.stop()
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        httpServer = null
+        server = null
     }
 }
