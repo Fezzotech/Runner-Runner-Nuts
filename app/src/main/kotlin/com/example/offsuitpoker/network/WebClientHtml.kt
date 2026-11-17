@@ -12,15 +12,28 @@ object WebClientHtml {
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
-    background-color: #08080A;
+    background-color: #050507;
     color: #EDEDED;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
     overflow-x: hidden;
     user-select: none;
     -webkit-user-select: none;
+  }
+  .app-container {
+    width: 100%;
+    max-width: 600px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #08080A;
+    border-left: 1px solid #1A1A26;
+    border-right: 1px solid #1A1A26;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.85);
+    position: relative;
   }
   header {
     display: flex;
@@ -306,6 +319,7 @@ object WebClientHtml {
 </style>
 </head>
 <body>
+<div class="app-container">
 
 <header>
   <div class="app-title">RUNNER RUNNER NUTS</div>
@@ -370,12 +384,14 @@ object WebClientHtml {
   </div>
 </div>
 
+</div><!-- /.app-container -->
+
 <!-- Join Modal Dialog -->
 <div class="modal-overlay" id="joinModal">
   <div class="modal-card">
     <div class="modal-title">RUNNER RUNNER NUTS</div>
-    <div class="modal-desc">Enter your player name to join the live Texas Hold'em table directly from Safari!</div>
-    <input type="text" class="input-field" id="nameInput" placeholder="Your Name" maxlength="12" value="iPhone Player">
+    <div class="modal-desc">Enter your player name to join the live Texas Hold'em table from any browser!</div>
+    <input type="text" class="input-field" id="nameInput" placeholder="Your Name" maxlength="12" value="Web Player">
     <button class="btn-join" onclick="joinTable()">JOIN TABLE</button>
   </div>
 </div>

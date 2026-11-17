@@ -323,7 +323,7 @@ fun HostQrDialog(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "iPhone: Scan with Camera to play in Safari!\nAndroid: Scan with in-app scanner",
+                            text = "iPhone / Mac: Scan QR or open Safari\nLaptop / PC: Open http://$hostIp:8080 in Chrome\nAndroid: Scan with in-app scanner",
                             color = Color(0xFFD4AF37),
                             fontFamily = FontFamily.Monospace,
                             fontSize = 9.5.sp,
