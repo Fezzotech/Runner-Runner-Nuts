@@ -1,0 +1,22 @@
+*.iml
+.gradle
+.kotlin
+/local.properties
+local.properties
+.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Keystore and signing credentials (DO NOT COMMIT)
+keystore.properties
+*.jks
+*.keystore
+
+# Temporary screenshots in root
+screenshot*.png
+screenshot*.jpg
+*.log
+
