@@ -26,6 +26,8 @@ Designed for an authentic, fluid poker experience with deep stack dynamics, mult
 
 ## Features
 
+- **Cross-Platform Local Multiplayer (iOS Safari & Web Support)**: Host a private table directly from your Android phone. Friends on iPhone, iPad, Mac, or PC can join and play instantly by scanning the table QR code with their camera or browsing to `http://<host-ip>:8080` in Safari/Chrome. Zero app download, zero cloud servers, zero ads—runs seamlessly over local Wi-Fi or a personal mobile hotspot via an embedded HTTP server and real-time WebSockets.
+- **Custom Currency & Formats**: Play in USD (`$`), EUR (`€`), GBP (`£`), INR (`₹`), or type your own custom currency symbol with responsive formatting throughout the app.
 - **Prestige Star Economy (High Stakes, Zero Real Money)**: Traditional free poker apps suffer from reckless "bingo poker" because play-money has no value. *Runner Runner Nuts* introduces a **Star Reputation System**: running out of chips requires sacrificing scarce, earned Stars to rebuy. This attaches genuine emotional weight and strategic consequence to every chip and fold—delivering authentic, high-tension poker psychology completely free from real-money gambling.
 - **Practice Arena vs. Competitive Tables**: Offers a dedicated, risk-free Practice Arena with instant chip recovery to test strategies, alongside high-stakes tables where stack preservation and star management truly matter.
 - **AMOLED Dark Theme**: Pure `#08080A` styling engineered for OLED displays and battery efficiency.
