@@ -4,6 +4,13 @@ A modern, high-performance Texas Hold'em Poker application for Android, built fr
 
 Designed for an authentic, fluid poker experience with deep stack dynamics, multi-way pot resolution, and intuitive UI.
 
+> ### ♠️ A Note from the Creator
+> Full disclosure: **I am not a software developer — I’m just someone who genuinely loves poker.**
+> 
+> I built *Runner Runner Nuts* because I wanted a clean, distraction-free poker game that captures the real tension and psychology of the table, without the endless bingo-shoving, ads, and carnival gimmicks of typical mobile apps.
+> 
+> Because I'm learning as I go, please excuse any rough edges or imperfections in the code! If you love poker or Android dev, I would genuinely appreciate your feedback, bug reports, advice, and contributions to help make this app the best it can be.
+
 ---
 
 ## Screenshots
@@ -60,6 +67,16 @@ cd Runner-Runner-Nuts
 ./gradlew assembleRelease
 ```
 The output APK will be generated at `app/build/outputs/apk/release/app-release.apk`.
+
+---
+
+## Contributing & Feedback
+
+All contributions, poker strategy advice, and bug reports are warmly welcomed!
+
+- **Found an issue or bug?** Export your diagnostic log directly from in-app settings and open an [Issue](https://github.com/Fezzotech/Runner-Runner-Nuts/issues).
+- **Want to improve the code?** Feel free to submit a Pull Request—whether it's optimizing Jetpack Compose performance, refining bot hand ranges, or improving animations.
+- **Have ideas for features?** Start a discussion or suggest ideas to help take the game to the next level.
 
 ---
 
