@@ -184,12 +184,38 @@ fun ActionControls(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        // Clean Action Bar (Matching Reference Image: [Check/Call] [Raise 200] [↑])
+        // Clean Action Bar: [Fold] [Check/Call] [Raise 200] [↑]
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Button 0: FOLD
+            Button(
+                onClick = {
+                    SoundManager.playFold()
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onAction(ActionType.FOLD, 0)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF1C1014),
+                    contentColor = Color(0xFFEF4444)
+                ),
+                shape = RoundedCornerShape(24.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF7F1D1D)),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                modifier = Modifier
+                    .weight(0.85f)
+                    .height(46.dp)
+            ) {
+                Text(
+                    text = "Fold",
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            }
+
             // Button 1: CHECK or CALL
             if (canCheck) {
                 Button(

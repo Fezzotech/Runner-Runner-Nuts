@@ -66,11 +66,30 @@ fun FlickableHoleCards(
         }
     }
 
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
     ) {
-        // Hole Cards Row with Drag Gesture (Flick up to fold)
+        // Flick up hint
+        if (isMyTurn && !isFolded) {
+            val isNearFold = offsetY.value < -60f
+            Text(
+                text = if (isNearFold) "RELEASE TO FOLD" else "↑ FLICK UP TO FOLD",
+                color = if (isNearFold) Color(0xFFEF4444) else Color(0xFFD4AF37),
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+        } else {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            // Hole Cards Row with Drag Gesture (Flick up to fold)
         Row(
             horizontalArrangement = Arrangement.spacedBy((-18).dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -132,6 +151,7 @@ fun FlickableHoleCards(
                 fourColor = fourColor,
                 isFolded = isFolded
             )
+        }
         }
     }
 }
