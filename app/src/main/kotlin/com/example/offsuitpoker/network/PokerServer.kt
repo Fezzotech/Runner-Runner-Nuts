@@ -16,7 +16,8 @@ import java.util.concurrent.ConcurrentHashMap
 class PokerServer(
     port: Int,
     private val scope: CoroutineScope,
-    private val hostPlayerId: String
+    private val hostPlayerId: String,
+    private val currencySymbol: String = "₹"
 ) : WebSocketServer(InetSocketAddress(port)) {
 
     private val gson = Gson()
@@ -30,6 +31,7 @@ class PokerServer(
     init {
         isReuseAddr = true
         engine.setHostId(hostPlayerId)
+        engine.setCurrencySymbol(currencySymbol)
     }
 
     override fun onStart() {

@@ -114,7 +114,7 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
                 server?.stop()
                 httpServer = PokerHttpServer(8080, viewModelScope)
                 httpServer?.start()
-                server = PokerServer(8088, viewModelScope, currentProfile.playerId)
+                server = PokerServer(8088, viewModelScope, currentProfile.playerId, currentProfile.currencySymbol)
                 server?.start()
                 _isHost.value = true
 
@@ -168,7 +168,7 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 httpServer?.stop()
                 server?.stop()
-                server = PokerServer(8088, viewModelScope, p.playerId)
+                server = PokerServer(8088, viewModelScope, p.playerId, p.currencySymbol)
                 server?.start()
                 _isHost.value = true
 

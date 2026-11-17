@@ -87,7 +87,8 @@ data class TableState(
     val winners: List<HandWinner> = emptyList(),
     val handCount: Int = 0,
     val hostId: String = "",
-    val lastHand: LastHandHistory? = null
+    val lastHand: LastHandHistory? = null,
+    val currencySymbol: String = "₹"
 ) : Serializable {
     val totalPot: Int
         get() = mainPot + sidePots.sumOf { it.amount } + seats.sumOf { it.roundBet }

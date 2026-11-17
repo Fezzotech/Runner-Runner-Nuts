@@ -47,6 +47,12 @@ class PokerGameEngine(
     }
 
     @Synchronized
+    fun setCurrencySymbol(symbol: String) {
+        state = state.copy(currencySymbol = symbol)
+        pushState()
+    }
+
+    @Synchronized
     fun addPlayer(player: PlayerSeat): Boolean {
         if (seats.size >= 8 || seats.any { it.id == player.id }) return false
         seats.add(player)
