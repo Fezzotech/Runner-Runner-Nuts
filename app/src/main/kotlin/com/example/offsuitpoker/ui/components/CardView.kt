@@ -135,11 +135,11 @@ fun CardFace(
     val isMini = width < 45.dp
     val cornerRadius = if (isMini) 5.dp else if (width >= 65.dp) 16.dp else 12.dp
     val shape = RoundedCornerShape(cornerRadius)
-    val cardBg = if (isFolded) Color(0xFF33333E) else Color(0xFFFCFCFD)
-    val cardBorder = if (isFolded) Color(0xFF4B4B5C) else Color(0xFFCBD5E1)
+    val cardBg = if (isFolded) Color(0xFF14141C) else Color(0xFFFCFCFD)
+    val cardBorder = if (isFolded) Color(0xFF383848) else Color(0xFFCBD5E1)
 
     val suitColor = if (isFolded) {
-        Color.White
+        Color(0xFFEEEEF0)
     } else if (fourColor) {
         when (card.suit) {
             Suit.HEARTS -> Color(0xFFDC2626) // Crimson Red

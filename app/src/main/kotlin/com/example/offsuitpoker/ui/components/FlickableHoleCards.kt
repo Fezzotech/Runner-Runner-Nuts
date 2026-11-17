@@ -1,8 +1,10 @@
 package com.example.offsuitpoker.ui.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -18,8 +20,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -56,13 +61,27 @@ fun FlickableHoleCards(
     val offsetX = remember { Animatable(0f) }
     val offsetY = remember { Animatable(0f) }
     val rotation = remember { Animatable(0f) }
+    val cardAlpha = remember { Animatable(1f) }
+    var isFlickingFold by remember { mutableStateOf(false) }
 
-    // When folded, immediately snap cards back to their resting position
-    LaunchedEffect(isFolded) {
-        if (isFolded) {
+    // When folded externally or cards reset
+    LaunchedEffect(isFolded, cards) {
+        if (isFolded && !isFlickingFold && offsetY.value == 0f) {
+            // Slide up black and white cards from below!
+            offsetY.snapTo(350f)
+            offsetY.animateTo(
+                targetValue = 0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            )
+        } else if (!isFolded) {
             offsetX.snapTo(0f)
             offsetY.snapTo(0f)
             rotation.snapTo(0f)
+            cardAlpha.snapTo(1f)
+            isFlickingFold = false
         }
     }
 
@@ -77,64 +96,87 @@ fun FlickableHoleCards(
                 text = if (isNearFold) "RELEASE TO FOLD" else "↑ FLICK UP TO FOLD",
                 color = if (isNearFold) Color(0xFFEF4444) else Color(0xFFD4AF37),
                 fontFamily = FontFamily.Monospace,
-                fontSize = 8.sp,
+                fontSize = 8.5.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.8.sp,
                 modifier = Modifier.padding(bottom = 2.dp)
             )
         } else {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(13.dp))
         }
 
         Box(
             contentAlignment = Alignment.Center
         ) {
             // Hole Cards Row with Drag Gesture (Flick up to fold)
-        Row(
-            horizontalArrangement = Arrangement.spacedBy((-18).dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
-                .rotate(rotation.value)
-                .pointerInput(isMyTurn, isFolded) {
-                    if (!isMyTurn || isFolded) return@pointerInput
-                    detectDragGestures(
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            coroutineScope.launch {
-                                offsetX.snapTo(offsetX.value + dragAmount.x)
-                                offsetY.snapTo(offsetY.value + dragAmount.y)
-                                rotation.snapTo((offsetX.value * 0.08f).coerceIn(-25f, 25f))
-                            }
-                        },
-                        onDragEnd = {
-                            coroutineScope.launch {
-                                // If flicked upwards significantly (offsetY < -110f)
-                                if (offsetY.value < -110f) {
-                                    SoundManager.playFold()
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    offsetY.animateTo(-800f, spring(stiffness = Spring.StiffnessHigh))
-                                    onFold()
-                                    offsetY.snapTo(0f)
-                                    offsetX.snapTo(0f)
-                                    rotation.snapTo(0f)
-                                } else {
-                                    launch { offsetX.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
-                                    launch { offsetY.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
-                                    launch { rotation.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy((-18).dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
+                    .rotate(rotation.value)
+                    .graphicsLayer { alpha = cardAlpha.value }
+                    .pointerInput(isMyTurn, isFolded) {
+                        if (!isMyTurn || isFolded) return@pointerInput
+                        detectDragGestures(
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                coroutineScope.launch {
+                                    offsetX.snapTo(offsetX.value + dragAmount.x)
+                                    offsetY.snapTo(offsetY.value + dragAmount.y)
+                                    rotation.snapTo((offsetX.value * 0.08f).coerceIn(-25f, 25f))
+                                }
+                            },
+                            onDragEnd = {
+                                coroutineScope.launch {
+                                    // If flicked upwards significantly (offsetY < -100f)
+                                    if (offsetY.value < -100f) {
+                                        isFlickingFold = true
+                                        SoundManager.playFold()
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                                        // 1. Throw cards away upward into the muck!
+                                        launch { cardAlpha.animateTo(0f, tween(260)) }
+                                        offsetY.animateTo(
+                                            targetValue = -1200f,
+                                            animationSpec = tween(durationMillis = 280, easing = FastOutLinearInEasing)
+                                        )
+
+                                        // 2. Dispatch fold to game engine
+                                        onFold()
+
+                                        // 3. Prepare black & white cards below screen
+                                        offsetX.snapTo(0f)
+                                        rotation.snapTo(0f)
+                                        offsetY.snapTo(400f)
+                                        cardAlpha.snapTo(1f)
+                                        isFlickingFold = false
+
+                                        // 4. New black and white cards slide up from below!
+                                        offsetY.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessMediumLow
+                                            )
+                                        )
+                                    } else {
+                                        launch { offsetX.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
+                                        launch { offsetY.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
+                                        launch { rotation.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
+                                    }
+                                }
+                            },
+                            onDragCancel = {
+                                coroutineScope.launch {
+                                    offsetX.animateTo(0f, spring())
+                                    offsetY.animateTo(0f, spring())
+                                    rotation.animateTo(0f, spring())
                                 }
                             }
-                        },
-                        onDragCancel = {
-                            coroutineScope.launch {
-                                offsetX.animateTo(0f, spring())
-                                offsetY.animateTo(0f, spring())
-                                rotation.animateTo(0f, spring())
-                            }
-                        }
-                    )
-                }
-        ) {
+                        )
+                    }
+            ) {
             CardView(
                 card = cards.getOrNull(0),
                 width = 72.dp,
