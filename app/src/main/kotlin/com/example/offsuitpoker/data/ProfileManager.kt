@@ -12,7 +12,9 @@ data class PlayerProfile(
     val totalBoughtInAmount: Int, // Max 50,000 over lifetime
     val totalBuyInsCount: Int,    // Max 5 over lifetime
     val fourColorDeckEnabled: Boolean = false,
-    val practiceChips: Int = 10000 // Completely isolated bankroll for Solo AI practice!
+    val practiceChips: Int = 10000, // Completely isolated bankroll for Solo AI practice!
+    val currencySymbol: String = "₹",
+    val useIndianNumbering: Boolean = true
 ) {
     val isPermanentlyBroke: Boolean
         get() = starsRemaining == 0 && currentChips <= 0
@@ -42,6 +44,8 @@ class ProfileManager(context: Context) {
         private const val KEY_FIRST_RUN_DONE = "first_run_done"
         private const val KEY_FOUR_COLOR = "four_color_deck"
         private const val KEY_PRACTICE_CHIPS = "practice_chips"
+        private const val KEY_CURRENCY_SYMBOL = "currency_symbol"
+        private const val KEY_INDIAN_NUMBERING = "indian_numbering"
     }
 
     init {
@@ -57,6 +61,8 @@ class ProfileManager(context: Context) {
                 .putInt(KEY_BUY_IN_COUNT, 0)
                 .putInt(KEY_PRACTICE_CHIPS, 10000)
                 .putBoolean(KEY_FOUR_COLOR, false)
+                .putString(KEY_CURRENCY_SYMBOL, "₹")
+                .putBoolean(KEY_INDIAN_NUMBERING, true)
                 .putBoolean(KEY_FIRST_RUN_DONE, true)
                 .apply()
         }
@@ -80,8 +86,17 @@ class ProfileManager(context: Context) {
             totalBoughtInAmount = prefs.getInt(KEY_TOTAL_BOUGHT_IN, 0),
             totalBuyInsCount = prefs.getInt(KEY_BUY_IN_COUNT, 0),
             fourColorDeckEnabled = prefs.getBoolean(KEY_FOUR_COLOR, false),
-            practiceChips = prefs.getInt(KEY_PRACTICE_CHIPS, 10000)
+            practiceChips = prefs.getInt(KEY_PRACTICE_CHIPS, 10000),
+            currencySymbol = prefs.getString(KEY_CURRENCY_SYMBOL, "₹") ?: "₹",
+            useIndianNumbering = prefs.getBoolean(KEY_INDIAN_NUMBERING, true)
         )
+    }
+
+    fun updateCurrency(symbol: String, useIndianNumbering: Boolean) {
+        prefs.edit()
+            .putString(KEY_CURRENCY_SYMBOL, symbol.trim())
+            .putBoolean(KEY_INDIAN_NUMBERING, useIndianNumbering)
+            .apply()
     }
 
     fun updatePlayerName(newName: String) {

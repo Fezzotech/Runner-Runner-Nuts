@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.offsuitpoker.model.LastHandHistory
+import com.example.offsuitpoker.util.CurrencyFormatter
 
 @Composable
 fun LastHandDialog(
@@ -75,7 +76,7 @@ fun LastHandDialog(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "FINAL BOARD (POT: ₹${history.pot})",
+                        text = "FINAL BOARD (POT: ${CurrencyFormatter.formatChips(history.pot)})",
                         color = Color(0xFF71717A),
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.5.sp,

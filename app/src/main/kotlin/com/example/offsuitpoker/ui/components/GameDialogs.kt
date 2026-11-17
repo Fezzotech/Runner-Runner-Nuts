@@ -60,7 +60,7 @@ fun PracticeStackDepletedDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "You ran out of practice chips!\nLeave the table and rejoin to start fresh with a new ₹10,000 stack.",
+                    text = "You ran out of practice chips!\nLeave the table and rejoin to start fresh with a new ${CurrencyFormatter.formatChips(10000)} stack.",
                     color = Color(0xFFEDEDED),
                     fontSize = 13.5.sp,
                     textAlign = TextAlign.Center,
@@ -143,7 +143,7 @@ fun RebuyDialog(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Sacrifice 1 Star for ₹10,000 chips?",
+                        text = "Sacrifice 1 Star for ${CurrencyFormatter.formatChips(10000)} chips?",
                         color = Color(0xFFEDEDED),
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center
@@ -182,7 +182,7 @@ fun RebuyDialog(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "LIFETIME RULE:\nFixed allowance of 5 stars (₹50,000 total chips) over the entire lifetime of the app.",
+                        text = "LIFETIME RULE:\nFixed allowance of 5 stars (${CurrencyFormatter.formatChips(50000)} total chips) over the entire lifetime of the app.",
                         color = Color(0xFF525260),
                         fontFamily = FontFamily.Monospace,
                         fontSize = 10.sp,
@@ -209,7 +209,7 @@ fun RebuyDialog(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1.5f)
                         ) {
-                            Text("REBUY ₹10,000", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                            Text("REBUY ${CurrencyFormatter.formatChips(10000)}", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Black, fontSize = 11.sp)
                         }
                     }
                 } else {
@@ -227,7 +227,7 @@ fun RebuyDialog(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "All 5 stars and ₹50,000 chips have been used over your lifetime.\n\nNo further buy-ins are permitted.",
+                        text = "All 5 stars and ${CurrencyFormatter.formatChips(50000)} chips have been used over your lifetime.\n\nNo further buy-ins are permitted.",
                         color = Color(0xFFA1A1AA),
                         fontSize = 13.sp,
                         textAlign = TextAlign.Center,

@@ -46,6 +46,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.window.Dialog
 import com.example.offsuitpoker.audio.SoundManager
 import com.example.offsuitpoker.data.PlayerProfile
 import com.example.offsuitpoker.model.TableState
@@ -58,6 +62,7 @@ fun SettingsScreen(
     tableState: TableState,
     localIpAddress: String,
     onToggleFourColor: () -> Unit,
+    onUpdateCurrency: (symbol: String, useIndianFormat: Boolean) -> Unit = { _, _ -> },
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -67,6 +72,10 @@ fun SettingsScreen(
 
     var logListVersion by remember { mutableStateOf(0) }
     val logs = remember(logListVersion) { AppLogger.getLogs() }
+
+    var showCustomCurrencyDialog by remember { mutableStateOf(false) }
+    var customSymbolInput by remember(profile.currencySymbol) { mutableStateOf(profile.currencySymbol) }
+    var customIndianFormat by remember(profile.useIndianNumbering) { mutableStateOf(profile.useIndianNumbering) }
 
     Column(
         modifier = modifier
@@ -293,8 +302,8 @@ fun SettingsScreen(
                 DiagRow("Android OS", "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
                 DiagRow("Local IP", "$localIpAddress:8080")
                 DiagRow("Player", "${profile.playerName} (${profile.playerId.take(8)}...)")
-                DiagRow("Stars", "${profile.starsRemaining}/5 active (${CurrencyFormatter.formatIndian(profile.currentChips)})")
-                DiagRow("Practice Chips", CurrencyFormatter.formatIndian(profile.practiceChips))
+                DiagRow("Stars", "${profile.starsRemaining}/5 active (${CurrencyFormatter.formatChips(profile.currentChips)})")
+                DiagRow("Practice Chips", CurrencyFormatter.formatChips(profile.practiceChips))
             }
         }
 
@@ -352,6 +361,151 @@ fun SettingsScreen(
                             uncheckedTrackColor = Color(0xFF1B1B24)
                         )
                     )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = Color(0xFF1C1C28), thickness = 0.75.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // TABLE CURRENCY SELECTION
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Table Currency",
+                                color = Color(0xFFEDEDED),
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "Sample: ${CurrencyFormatter.formatChips(50000)}",
+                                color = Color(0xFFD4AF37),
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 5 Standard Presets
+                    val standardPresets = listOf(
+                        Triple("₹", "INR", true),
+                        Triple("$", "USD", false),
+                        Triple("€", "EUR", false),
+                        Triple("£", "GBP", false),
+                        Triple("🪙", "CHIPS", false)
+                    )
+                    val isCustom = standardPresets.none { it.first == profile.currencySymbol && it.third == profile.useIndianNumbering }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        standardPresets.forEach { (symbol, label, isIndian) ->
+                            val isSelected = !isCustom && profile.currencySymbol == symbol && profile.useIndianNumbering == isIndian
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) Color(0xFFD4AF37) else Color(0xFF161620))
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) Color(0xFFD4AF37) else Color(0xFF262636),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable {
+                                        SoundManager.playChipBet()
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        onUpdateCurrency(symbol, isIndian)
+                                    }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = symbol,
+                                        color = if (isSelected) Color(0xFF0C0C0E) else Color(0xFFEDEDED),
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = label,
+                                        color = if (isSelected) Color(0xFF0C0C0E) else Color(0xFF71717A),
+                                        fontSize = 9.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Custom Keyboard Entry Option
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (isCustom) Color(0xFF231E12) else Color(0xFF161620))
+                            .border(
+                                1.dp,
+                                if (isCustom) Color(0xFFD4AF37) else Color(0xFF262636),
+                                RoundedCornerShape(8.dp)
+                            )
+                            .clickable {
+                                SoundManager.playChipBet()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                customSymbolInput = profile.currencySymbol
+                                customIndianFormat = profile.useIndianNumbering
+                                showCustomCurrencyDialog = true
+                            }
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(text = "✏️", fontSize = 13.sp)
+                                Column {
+                                    Text(
+                                        text = if (isCustom) "Custom Currency: \"${profile.currencySymbol}\"" else "Custom Currency Symbol...",
+                                        color = if (isCustom) Color(0xFFD4AF37) else Color(0xFFEDEDED),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = if (isCustom) {
+                                            "Formatting: ${if (profile.useIndianNumbering) "Indian (1,00,000)" else "Western (100,000)"}"
+                                        } else {
+                                            "Type any symbol or tag (¥, ₩, CHF, CAD, PTS...)"
+                                        },
+                                        color = Color(0xFF71717A),
+                                        fontSize = 10.5.sp
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = if (isCustom) "EDIT" else "SET",
+                                color = Color(0xFFD4AF37),
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -425,6 +579,213 @@ fun SettingsScreen(
                     textAlign = TextAlign.Center,
                     lineHeight = 15.sp
                 )
+            }
+        }
+
+        if (showCustomCurrencyDialog) {
+            Dialog(onDismissRequest = { showCustomCurrencyDialog = false }) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF101016)),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "CUSTOM CURRENCY",
+                            color = Color(0xFFD4AF37),
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "Enter any symbol or code you want to display on tables, chips, and pots.",
+                            color = Color(0xFF9E9EB0),
+                            fontSize = 11.5.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = customSymbolInput,
+                            onValueChange = { if (it.length <= 6) customSymbolInput = it },
+                            label = { Text("Currency Symbol / Tag", color = Color(0xFF888899)) },
+                            placeholder = { Text("e.g. ¥, ₩, CHF, CAD, PTS", color = Color(0xFF555566)) },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = Color(0xFFEDEDED),
+                                unfocusedTextColor = Color(0xFFEDEDED),
+                                focusedBorderColor = Color(0xFFD4AF37),
+                                unfocusedBorderColor = Color(0xFF2E2E40),
+                                cursorColor = Color(0xFFD4AF37)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Numbering Format Style (Standard vs Indian)
+                        Text(
+                            text = "NUMBER GROUPING STYLE",
+                            color = Color(0xFF525260),
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Western 100,000
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (!customIndianFormat) Color(0xFF231E12) else Color(0xFF161620))
+                                    .border(
+                                        1.dp,
+                                        if (!customIndianFormat) Color(0xFFD4AF37) else Color(0xFF262636),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { customIndianFormat = false }
+                                    .padding(vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "Standard",
+                                        color = if (!customIndianFormat) Color(0xFFD4AF37) else Color(0xFFEDEDED),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "100,000",
+                                        color = Color(0xFF71717A),
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+
+                            // Indian 1,00,000
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (customIndianFormat) Color(0xFF231E12) else Color(0xFF161620))
+                                    .border(
+                                        1.dp,
+                                        if (customIndianFormat) Color(0xFFD4AF37) else Color(0xFF262636),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { customIndianFormat = true }
+                                    .padding(vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "Lakh / Crore",
+                                        color = if (customIndianFormat) Color(0xFFD4AF37) else Color(0xFFEDEDED),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "1,00,000",
+                                        color = Color(0xFF71717A),
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Live Preview Box
+                        val sampleAmount = 50000L
+                        val previewFormatted = if (customIndianFormat) {
+                            CurrencyFormatter.formatIndian(sampleAmount)
+                        } else {
+                            CurrencyFormatter.formatWestern(sampleAmount)
+                        }
+                        val previewDisplay = when {
+                            customSymbolInput.isEmpty() -> previewFormatted
+                            customSymbolInput.length > 2 && customSymbolInput.all { it.isLetter() } -> "$previewFormatted $customSymbolInput"
+                            else -> "$customSymbolInput$previewFormatted"
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFF0B0B10))
+                                .border(0.75.dp, Color(0xFFD4AF37).copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "PREVIEW: $previewDisplay",
+                                color = Color(0xFFD4AF37),
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Button(
+                                onClick = { showCustomCurrencyDialog = false },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF181822),
+                                    contentColor = Color(0xFF888899)
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp)
+                            ) {
+                                Text("CANCEL", fontFamily = FontFamily.Monospace, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            Button(
+                                onClick = {
+                                    SoundManager.playChipBet()
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onUpdateCurrency(customSymbolInput.trim(), customIndianFormat)
+                                    showCustomCurrencyDialog = false
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD4AF37),
+                                    contentColor = Color(0xFF0C0C0E)
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp)
+                            ) {
+                                Text("APPLY", fontFamily = FontFamily.Monospace, fontSize = 11.5.sp, fontWeight = FontWeight.Black)
+                            }
+                        }
+                    }
+                }
             }
         }
 

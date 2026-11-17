@@ -57,13 +57,22 @@ class PokerViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         // Production: persistent lifetime stars and profile
-        _profile.value = profileManager.getProfile()
+        val p = profileManager.getProfile()
+        com.example.offsuitpoker.util.CurrencyFormatter.initFromProfile(p)
+        _profile.value = p
     }
 
     val localIpAddress: String = NetworkUtils.getLocalIpAddress()
 
     private var server: PokerServer? = null
     private var client: PokerClient? = null
+
+    fun updateCurrency(symbol: String, useIndianFormat: Boolean) {
+        profileManager.updateCurrency(symbol, useIndianFormat)
+        val updated = profileManager.getProfile()
+        com.example.offsuitpoker.util.CurrencyFormatter.initFromProfile(updated)
+        _profile.value = updated
+    }
 
     fun updatePlayerName(newName: String) {
         profileManager.updatePlayerName(newName)

@@ -109,6 +109,7 @@ class MainActivity : ComponentActivity() {
                                 tableState = tableState,
                                 localIpAddress = viewModel.localIpAddress,
                                 onToggleFourColor = { viewModel.toggleFourColorDeck() },
+                                onUpdateCurrency = { symbol, isIndian -> viewModel.updateCurrency(symbol, isIndian) },
                                 onBack = { viewModel.closeSettings() }
                             )
                         }
