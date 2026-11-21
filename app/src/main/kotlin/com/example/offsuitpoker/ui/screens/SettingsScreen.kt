@@ -1,6 +1,13 @@
 package com.example.offsuitpoker.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -579,6 +586,48 @@ fun SettingsScreen(
                     textAlign = TextAlign.Center,
                     lineHeight = 15.sp
                 )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Buy Dev a Coffee (Direct UPI Intent)
+                Button(
+                    onClick = {
+                        val upiUri = Uri.parse("upi://pay?pa=yash.lohiya716-1@okicici&pn=Dr%20Yash%20Lohiya&tn=Coffee%20for%20Runner%20Runner%20Nuts&cu=INR")
+                        val intent = Intent(Intent.ACTION_VIEW, upiUri)
+                        try {
+                            val chooser = Intent.createChooser(intent, "Pay via UPI")
+                            context.startActivity(chooser)
+                        } catch (e: Exception) {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("UPI ID", "yash.lohiya716-1@okicici")
+                            clipboard.setPrimaryClip(clip)
+                            Toast.makeText(context, "UPI ID copied: yash.lohiya716-1@okicici", Toast.LENGTH_LONG).show()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF1E1A12),
+                        contentColor = Color(0xFFD4AF37)
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFFD4AF37)),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    modifier = Modifier.height(38.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("☕", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "BUY DEV A COFFEE",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
             }
         }
 

@@ -1,14 +1,22 @@
 package com.example.offsuitpoker.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,6 +73,7 @@ fun LobbyScreen(
     var showScanner by remember { mutableStateOf(false) }
     var showSlangDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -556,6 +567,48 @@ fun LobbyScreen(
                         textAlign = TextAlign.Center,
                         lineHeight = 16.5.sp
                     )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Buy Dev a Coffee (Direct UPI Intent)
+                    Button(
+                        onClick = {
+                            val upiUri = Uri.parse("upi://pay?pa=yash.lohiya716-1@okicici&pn=Dr%20Yash%20Lohiya&tn=Coffee%20for%20Runner%20Runner%20Nuts&cu=INR")
+                            val intent = Intent(Intent.ACTION_VIEW, upiUri)
+                            try {
+                                val chooser = Intent.createChooser(intent, "Pay via UPI")
+                                context.startActivity(chooser)
+                            } catch (e: Exception) {
+                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                val clip = ClipData.newPlainText("UPI ID", "yash.lohiya716-1@okicici")
+                                clipboard.setPrimaryClip(clip)
+                                Toast.makeText(context, "UPI ID copied: yash.lohiya716-1@okicici", Toast.LENGTH_LONG).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF1E1A12),
+                            contentColor = Color(0xFFD4AF37)
+                        ),
+                        border = BorderStroke(1.dp, Color(0xFFD4AF37)),
+                        shape = RoundedCornerShape(20.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                        modifier = Modifier.height(38.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text("☕", fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "BUY DEV A COFFEE",
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
+                        }
+                    }
                 }
             }
 
