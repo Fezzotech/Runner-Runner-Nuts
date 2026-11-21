@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -108,7 +109,8 @@ fun OpponentSeatView(
     showdownMode: Boolean,
     modifier: Modifier = Modifier,
     fourColor: Boolean = false,
-    showFaceDownCards: Boolean = false
+    showFaceDownCards: Boolean = false,
+    isWinner: Boolean = false
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "turn_pulse")
     val pulseAlpha by infiniteTransition.animateFloat(
@@ -120,15 +122,29 @@ fun OpponentSeatView(
         ),
         label = "pulse_alpha"
     )
+    val winnerPulse by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(650, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "winner_pulse"
+    )
 
     val scaleFactor by animateFloatAsState(
-        targetValue = if (isCurrentTurn) 1.05f else 1.0f,
+        targetValue = when {
+            isWinner -> winnerPulse
+            isCurrentTurn -> 1.05f
+            else -> 1.0f
+        },
         animationSpec = spring(),
         label = "turn_scale"
     )
 
     val avatarBorderColor by animateColorAsState(
         targetValue = when {
+            isWinner -> Color(0xFFD4AF37)
             isCurrentTurn -> Color(0xFFD4AF37).copy(alpha = pulseAlpha)
             player.folded -> Color(0xFF22222A)
             else -> Color(0xFF2E2E3C)
@@ -137,6 +153,7 @@ fun OpponentSeatView(
     )
 
     val avatarBackground = when {
+        isWinner -> Color(0xFF2B2414)
         player.folded -> Color(0xFF101014).copy(alpha = 0.5f)
         isCurrentTurn -> Color(0xFF201D14)
         else -> Color(0xFF161620)
@@ -153,6 +170,18 @@ fun OpponentSeatView(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(60.dp)
         ) {
+            // Winner Crown / Badge
+            if (isWinner) {
+                Text(
+                    text = "🏆 WINNER",
+                    color = Color(0xFFD4AF37),
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 7.5.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.5.sp,
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+            }
             // Revealed Cards at Showdown only
             if (showCards) {
                 Row(
@@ -329,6 +358,7 @@ fun LocalPlayerPod(
     isSmallBlind: Boolean,
     isBigBlind: Boolean,
     liveHandDescription: String? = null,
+    isWinner: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "local_turn_pulse")
@@ -341,12 +371,26 @@ fun LocalPlayerPod(
         ),
         label = "local_pulse_alpha"
     )
+    val winnerPulse by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(650, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "local_winner_pulse"
+    )
 
-    val borderColor = if (isCurrentTurn) Color(0xFFD4AF37).copy(alpha = pulseAlpha) else Color(0xFF262634)
+    val borderColor = when {
+        isWinner -> Color(0xFFD4AF37)
+        isCurrentTurn -> Color(0xFFD4AF37).copy(alpha = pulseAlpha)
+        else -> Color(0xFF262634)
+    }
     val initialLetter = player.name.trim().take(1).uppercase().ifEmpty { "Y" }
 
     // Format hand rank in clean Title Case (e.g. "High Card", "Pair of Kings", "Two Pair")
     val displayHandRank = when {
+        isWinner -> "🏆 Winner!"
         player.folded -> "Folded"
         !liveHandDescription.isNullOrBlank() -> liveHandDescription
         else -> "High Card"
@@ -354,9 +398,15 @@ fun LocalPlayerPod(
 
     Box(
         modifier = modifier
+            .graphicsLayer {
+                if (isWinner) {
+                    scaleX = winnerPulse
+                    scaleY = winnerPulse
+                }
+            }
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF0F0F14))
-            .border(if (isCurrentTurn) 1.5.dp else 1.dp, borderColor, RoundedCornerShape(16.dp))
+            .background(if (isWinner) Color(0xFF1C180E) else Color(0xFF0F0F14))
+            .border(if (isWinner || isCurrentTurn) 1.8.dp else 1.dp, borderColor, RoundedCornerShape(16.dp))
             .padding(horizontal = 8.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center
     ) {

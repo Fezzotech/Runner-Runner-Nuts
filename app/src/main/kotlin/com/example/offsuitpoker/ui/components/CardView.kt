@@ -191,31 +191,39 @@ fun CardFace(
         }
     } else {
         // FULL CARD (Community Cards & Hole Cards):
-        // Exact match to reference screenshot:
-        // Top-left Rank with Suit directly underneath it; clean uncluttered card face!
-        val rankFontSize = if (card.rank.display.length > 1) (width.value * 0.34f).sp else (width.value * 0.40f).sp
-        val suitIconSize = (width.value * 0.30f).dp
+        // Modern, clean, and legible with larger rank typography and subtle warm ambient glow
+        val rankFontSize = if (card.rank.display.length > 1) (width.value * 0.40f).sp else (width.value * 0.46f).sp
+        val suitIconSize = (width.value * 0.35f).dp
 
         Box(
             modifier = modifier
                 .size(width, height)
-                .shadow(if (isFolded) 2.dp else 6.dp, shape)
+                .shadow(
+                    elevation = if (isFolded) 2.dp else 8.dp,
+                    shape = shape,
+                    spotColor = if (!isFolded) Color(0x40D4AF37) else Color(0x40000000),
+                    ambientColor = Color(0x33000000)
+                )
                 .clip(shape)
                 .background(cardBg)
-                .border(0.9.dp, cardBorder, shape)
-                .padding(horizontal = (width.value * 0.12f).dp, vertical = (height.value * 0.08f).dp),
+                .border(
+                    width = if (isFolded) 0.8.dp else 1.dp,
+                    color = if (isFolded) cardBorder else Color(0xFFE2E8F0),
+                    shape = shape
+                )
+                .padding(horizontal = (width.value * 0.10f).dp, vertical = (height.value * 0.07f).dp),
             contentAlignment = Alignment.TopStart
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(1.dp)
             ) {
                 Text(
                     text = card.rank.display,
                     color = suitColor,
                     fontFamily = FontFamily.SansSerif,
                     fontSize = rankFontSize,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Black,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
                 )
 
@@ -241,7 +249,12 @@ fun CardBack(
     Box(
         modifier = modifier
             .size(width, height)
-            .shadow(4.dp, shape)
+            .shadow(
+                elevation = if (isMini) 3.dp else 6.dp,
+                shape = shape,
+                spotColor = Color(0x33D4AF37),
+                ambientColor = Color(0x33000000)
+            )
             .clip(shape)
             .background(Color(0xFFFAFAFA))
             .border(1.dp, Color(0xFFE2E8F0), shape),

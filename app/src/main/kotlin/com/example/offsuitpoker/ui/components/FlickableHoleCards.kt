@@ -5,8 +5,6 @@ import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,9 +24,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -58,13 +52,11 @@ fun FlickableHoleCards(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
-    val offsetX = remember { Animatable(0f) }
     val offsetY = remember { Animatable(0f) }
-    val rotation = remember { Animatable(0f) }
     val cardAlpha = remember { Animatable(1f) }
     var isFlickingFold by remember { mutableStateOf(false) }
 
-    // When folded externally or cards reset
+    // When folded externally or cards reset on new hand
     LaunchedEffect(isFolded, cards) {
         if (isFolded && !isFlickingFold && offsetY.value == 0f) {
             // Slide up black and white cards from below!
@@ -77,9 +69,7 @@ fun FlickableHoleCards(
                 )
             )
         } else if (!isFolded) {
-            offsetX.snapTo(0f)
             offsetY.snapTo(0f)
-            rotation.snapTo(0f)
             cardAlpha.snapTo(1f)
             isFlickingFold = false
         }
@@ -108,13 +98,12 @@ fun FlickableHoleCards(
         Box(
             contentAlignment = Alignment.Center
         ) {
-            // Hole Cards Row with Drag Gesture (Flick up to fold)
+            // Hole Cards Row with Drag Gesture (Strictly 1-Axis Vertical Flick Only)
             Row(
-                horizontalArrangement = Arrangement.spacedBy((-18).dp),
+                horizontalArrangement = Arrangement.spacedBy((-20).dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
-                    .rotate(rotation.value)
+                    .offset { IntOffset(0, offsetY.value.roundToInt()) }
                     .graphicsLayer { alpha = cardAlpha.value }
                     .pointerInput(isMyTurn, isFolded) {
                         if (!isMyTurn || isFolded) return@pointerInput
@@ -122,37 +111,34 @@ fun FlickableHoleCards(
                             onDrag = { change, dragAmount ->
                                 change.consume()
                                 coroutineScope.launch {
-                                    offsetX.snapTo(offsetX.value + dragAmount.x)
-                                    offsetY.snapTo(offsetY.value + dragAmount.y)
-                                    rotation.snapTo((offsetX.value * 0.08f).coerceIn(-25f, 25f))
+                                    // Strictly 1-dimensional (Y-axis only) - cards only flick upwards into the muck
+                                    offsetY.snapTo((offsetY.value + dragAmount.y).coerceAtMost(0f))
                                 }
                             },
                             onDragEnd = {
                                 coroutineScope.launch {
-                                    // If flicked upwards significantly (offsetY < -100f)
-                                    if (offsetY.value < -100f) {
+                                    // If flicked upwards significantly (offsetY < -90f)
+                                    if (offsetY.value < -90f) {
                                         isFlickingFold = true
                                         SoundManager.playFold()
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                                        // 1. Throw cards away upward into the muck!
-                                        launch { cardAlpha.animateTo(0f, tween(260)) }
+                                        // 1. Throw cards away vertically upward into the muck!
+                                        launch { cardAlpha.animateTo(0f, tween(240)) }
                                         offsetY.animateTo(
                                             targetValue = -1200f,
-                                            animationSpec = tween(durationMillis = 280, easing = FastOutLinearInEasing)
+                                            animationSpec = tween(durationMillis = 260, easing = FastOutLinearInEasing)
                                         )
 
                                         // 2. Dispatch fold to game engine
                                         onFold()
 
                                         // 3. Prepare black & white cards below screen
-                                        offsetX.snapTo(0f)
-                                        rotation.snapTo(0f)
-                                        offsetY.snapTo(400f)
+                                        offsetY.snapTo(350f)
                                         cardAlpha.snapTo(1f)
                                         isFlickingFold = false
 
-                                        // 4. New black and white cards slide up from below!
+                                        // 4. New black and white cards slide straight up from below!
                                         offsetY.animateTo(
                                             targetValue = 0f,
                                             animationSpec = spring(
@@ -161,39 +147,35 @@ fun FlickableHoleCards(
                                             )
                                         )
                                     } else {
-                                        launch { offsetX.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
                                         launch { offsetY.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
-                                        launch { rotation.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy)) }
                                     }
                                 }
                             },
                             onDragCancel = {
                                 coroutineScope.launch {
-                                    offsetX.animateTo(0f, spring())
                                     offsetY.animateTo(0f, spring())
-                                    rotation.animateTo(0f, spring())
                                 }
                             }
                         )
                     }
             ) {
-            CardView(
-                card = cards.getOrNull(0),
-                width = 72.dp,
-                height = 104.dp,
-                faceUp = true,
-                fourColor = fourColor,
-                isFolded = isFolded
-            )
-            CardView(
-                card = cards.getOrNull(1),
-                width = 72.dp,
-                height = 104.dp,
-                faceUp = true,
-                fourColor = fourColor,
-                isFolded = isFolded
-            )
-        }
+                CardView(
+                    card = cards.getOrNull(0),
+                    width = 84.dp,
+                    height = 120.dp,
+                    faceUp = true,
+                    fourColor = fourColor,
+                    isFolded = isFolded
+                )
+                CardView(
+                    card = cards.getOrNull(1),
+                    width = 84.dp,
+                    height = 120.dp,
+                    faceUp = true,
+                    fourColor = fourColor,
+                    isFolded = isFolded
+                )
+            }
         }
     }
 }

@@ -430,7 +430,8 @@ fun PokerTableScreen(
                                 isSmallBlind = tableState.smallBlindIndex == originalIdx,
                                 isBigBlind = tableState.bigBlindIndex == originalIdx,
                                 showdownMode = tableState.phase == RoundPhase.SHOWDOWN,
-                                fourColor = profile.fourColorDeckEnabled
+                                fourColor = profile.fourColorDeckEnabled,
+                                isWinner = tableState.phase == RoundPhase.SHOWDOWN && tableState.winners.any { it.playerId == opp.id }
                             )
                         }
                     }
@@ -462,7 +463,7 @@ fun PokerTableScreen(
             ) {
                 // 5 Community Cards (Clean white with diagonal stripes when face down)
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     for (i in 0 until 5) {
@@ -470,8 +471,8 @@ fun PokerTableScreen(
                         AnimatedCommunityCard(
                             card = card,
                             index = i,
-                            width = 62.dp,
-                            height = 88.dp,
+                            width = 66.dp,
+                            height = 94.dp,
                             fourColor = profile.fourColorDeckEnabled
                         )
                     }
@@ -724,20 +725,22 @@ fun PokerTableScreen(
                             onFold = { onAction(ActionType.FOLD, 0) }
                         )
                     } else {
-                        Spacer(modifier = Modifier.size(width = 104.dp, height = 104.dp))
+                        Spacer(modifier = Modifier.size(width = 84.dp, height = 120.dp))
                     }
 
-                    // Right: Local Player Pod (Sides and height same as cards: 104.dp x 104.dp! Exactly the same latitude!)
+                    // Right: Local Player Pod
                     if (localSeat != null) {
                         val myOriginalIdx = tableState.seats.indexOf(localSeat)
+                        val isLocalWinner = tableState.phase == RoundPhase.SHOWDOWN && tableState.winners.any { it.playerId == localSeat.id }
                         LocalPlayerPod(
                             player = localSeat,
                             isCurrentTurn = tableState.activeTurnIndex == myOriginalIdx,
                             isDealer = tableState.dealerIndex == myOriginalIdx,
                             isSmallBlind = tableState.smallBlindIndex == myOriginalIdx,
                             isBigBlind = tableState.bigBlindIndex == myOriginalIdx,
+                            isWinner = isLocalWinner,
                             liveHandDescription = if (!localSeat.folded) liveHandDescription else "FOLDED",
-                            modifier = Modifier.size(104.dp)
+                            modifier = Modifier.size(width = 110.dp, height = 120.dp)
                         )
                     }
                 }
